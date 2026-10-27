@@ -1,0 +1,645 @@
+PROJECT: WAFFLE POPS AND COMPANY — FULL-STACK ONLINE ORDERING PLATFORM
+
+Act as a senior full-stack engineer, UI/UX designer, database architect, security engineer and QA engineer. Build a complete, production-oriented online ordering application for Waffle Pops and Company, a dessert business specializing in Belgian-style waffles, signature stuffed waffles, chocolate-dripping waffle pops and related desserts.
+
+Do not merely describe the application or produce a static mockup. Implement the actual frontend, backend, database schema, migrations, functional customer workflows, protected admin workflows, tests and deployment documentation. Inspect the existing workspace first and preserve working code when extending an existing project.
+
+==================================================
+1. FIXED PROJECT DECISIONS
+==================================================
+
+Frontend: React + TypeScript + Vite.
+Styling: Tailwind CSS and reusable accessible UI components.
+Backend: Node.js + Express + TypeScript.
+Database: PostgreSQL.
+ORM and migrations: Prisma.
+API: REST with validated request/response schemas.
+Testing: Vitest or Jest for unit tests and an appropriate HTTP integration-testing library.
+API documentation: OpenAPI or a clear equivalent.
+Version control: Git-compatible project structure.
+
+Initial launch branch: Mandadam.
+Branch address: Main Road, opposite Krupa Bangalore Bakery Shop, Mandadam, Andhra Pradesh.
+Address is provisional until confirmed by the business owner.
+Ordering methods: delivery and takeaway.
+Customer payment choices: UPI and Cash on Delivery (COD).
+Payment integration status: not configured. Implement a safe payment abstraction and COD first. Do not falsely represent UPI transactions as completed.
+Initial branding direction: chocolate brown, waffle gold and cream, with restrained berry accents.
+All unverified business details must be configurable. Never invent the official logo, verified product catalog, exact prices, contact number, business hours, delivery radius, customer reviews or payment credentials.
+
+Use INR throughout. Example menu prices may be seeded only as clearly labeled DEMO DATA and must never be presented as verified business prices.
+
+==================================================
+2. BRAND AND VISUAL DESIGN
+==================================================
+
+Create a visually distinctive, premium-but-approachable dessert brand.
+
+Proposed palette:
+- Chocolate brown: #39251F
+- Waffle gold: #F5C76A
+- Cream: #FFF8EF
+- Berry accent: #B85A45
+
+Treat these as proposed design colors, not verified official brand colors.
+
+Design principles:
+- Appetizing, high-quality waffle and chocolate photography.
+- Elegant typography, excellent whitespace and strong visual hierarchy.
+- Warm backgrounds, restrained shadows, rounded product cards and tasteful transitions.
+- Large, clear product images and prices.
+- Consistent spacing and reusable design tokens.
+- Responsive desktop, tablet and mobile layouts.
+- Sticky mobile cart and compact bottom navigation where useful.
+- Accessible contrast, keyboard navigation, focus states, semantic HTML and reduced-motion support.
+- Fast loading, optimized images, lazy loading and skeleton states.
+
+Avoid generic AI dashboard aesthetics, excessive gradients, clutter, excessive animation and oversized hero sections that hide the menu.
+
+Do not fabricate an official logo. Use a typographic wordmark until official brand assets are supplied. Prefer real business photographs supplied by the owner. Use clearly labeled placeholder images or demo assets where real assets are unavailable.
+
+==================================================
+3. CUSTOMER HOMEPAGE AND PRODUCT CATALOG
+==================================================
+
+Create a complete homepage containing:
+- Brand header and navigation.
+- Delivery/takeaway selector.
+- Branch and service-area information.
+- Hero section with an Order Now call to action.
+- Searchable product catalog.
+- Category navigation.
+- Featured products and signature desserts.
+- Product cards with image, name, description, price, availability and add-to-cart action.
+- Product details modal.
+- Optional toppings, fillings, add-ons and customization where configured.
+- Quantity selection.
+- Dietary labels only when verified.
+- Offers and coupon section only when configured.
+- Business hours, contact details and footer.
+- Loading, error and empty states.
+
+Suggested menu categories, to be enabled only when actual menu items are confirmed:
+- Signature Waffles
+- Stuffed Waffles
+- Waffle Pops
+- Chocolate Specials
+- Beverages and Extras
+
+Every product must be editable in the admin dashboard. Do not hardcode the catalog into frontend components.
+
+Search should support product names and descriptions. Filters should reflect actual catalog attributes. Unavailable products must be clearly marked and impossible to add to the cart.
+
+==================================================
+4. DELIVERY, TAKEAWAY AND BRANCH LOGIC
+==================================================
+
+Launch with the Mandadam branch only.
+
+Store the following provisional branch information:
+Name: Waffle Pops and Company — Mandadam.
+Address: Main Road, opposite Krupa Bangalore Bakery Shop, Mandadam, Andhra Pradesh.
+Verification status: requires owner confirmation.
+
+Create a branch model so other branches can be added later without redesigning the application. Do not activate other outlets for online ordering until their details are verified.
+
+Each branch should eventually support:
+- Address and contact details.
+- Opening hours and temporary closures.
+- Delivery service area.
+- Minimum order value.
+- Delivery fee.
+- Estimated preparation time.
+- Menu availability and branch-specific pricing.
+- Takeaway availability.
+- Pause/resume online orders.
+
+For delivery, collect a complete address, landmark and optional delivery instructions. Validate whether the address is serviceable using a configured service-area rule. Do not invent a delivery radius or claim address verification without a real integration.
+
+For takeaway, let customers choose pickup, show the branch address and display a pickup estimate only when the business has configured a valid estimate.
+
+If the customer switches fulfilment mode or branch, revalidate cart items, prices and eligibility. Explain any changes before checkout.
+
+==================================================
+5. CART AND PRODUCT CUSTOMIZATION
+==================================================
+
+Implement a functional cart drawer or side panel on desktop and a mobile bottom sheet.
+
+Include:
+- Product image and name.
+- Selected variants and add-ons.
+- Quantity controls.
+- Remove item.
+- Edit customization.
+- Item subtotal.
+- Cart item count.
+- Clear cart confirmation.
+- Continue shopping.
+- Proceed to checkout.
+
+Provide a floating or sticky cart control when the cart contains items. It must not cover important page controls.
+
+Persist a customer's cart across refreshes appropriately, but treat the backend database and server-calculated prices as authoritative for checkout.
+
+If an item becomes unavailable or its price changes, notify the customer and require confirmation before proceeding.
+
+==================================================
+6. AUTHENTICATION AND CUSTOMER PROFILE
+==================================================
+
+Implement straightforward account authentication.
+
+Registration fields:
+- Name.
+- Mobile number.
+- Password.
+- Password confirmation where appropriate.
+
+Login should accept the configured account identifier and password.
+
+Provide:
+- Logout.
+- Session expiration and renewal.
+- Profile editing.
+- Mobile number and name.
+- Saved delivery addresses.
+- Default address selection.
+- Order history.
+- Reorder.
+- Feedback.
+- Customer care.
+- Account deactivation or deletion workflow where legally appropriate.
+
+Security requirements:
+- Hash passwords using Argon2id or bcrypt.
+- Never store plaintext passwords.
+- Never log passwords or authentication secrets.
+- Validate and normalize inputs.
+- Rate-limit authentication attempts.
+- Prevent brute-force attacks.
+- Use secure, HTTP-only, SameSite cookies and appropriate CSRF protection for cookie-based authentication.
+- Configure HTTPS and secure cookies in production.
+- Keep authorization checks on the backend.
+- Do not expose account details or orders belonging to another customer.
+- Do not claim phone OTP verification unless an actual OTP provider is configured.
+- Allow guest checkout if practical, but require customer name, phone and delivery/pickup information for each order.
+
+Do not allow public users to assign themselves admin privileges.
+
+==================================================
+7. CHECKOUT AND BILL GENERATION
+==================================================
+
+Build a clear checkout experience with:
+- Customer name.
+- Mobile number.
+- Delivery address and landmark for delivery.
+- Pickup details for takeaway.
+- Optional customer instructions.
+- Payment method.
+- Itemized order summary.
+- Final confirmation before submission.
+
+Generate a professional invoice showing:
+- Unique order number.
+- Order date and time.
+- Branch.
+- Customer contact details.
+- Delivery address or takeaway/pickup information.
+- Product names and selected variants.
+- Quantities and individual prices.
+- Item subtotals.
+- Delivery charge, if applicable.
+- Applicable taxes and other disclosed charges.
+- Discount, if applicable.
+- Final amount payable.
+- Selected payment method.
+- Payment status.
+
+Calculate all totals on the backend using trusted database prices and validated discount rules. Never trust prices or totals submitted by the browser.
+
+Use appropriate PostgreSQL numeric/decimal types for money. Avoid floating-point arithmetic for monetary calculations.
+
+Use a database transaction when creating an order and its order items. Prevent duplicate order submissions with idempotency handling or an equivalent reliable mechanism.
+
+UPI:
+- Create a payment-provider abstraction.
+- Until merchant credentials and provider configuration are available, display UPI as unavailable or explicitly in demo mode.
+- Do not create fake payment confirmations.
+- Do not mark an order as paid from a frontend button click.
+- Once configured, verify payment status using authenticated server-side provider APIs or verified webhooks.
+- Verify webhook signatures and make processing idempotent.
+- Never store sensitive payment credentials in the frontend.
+
+Cash on Delivery:
+- Create the order after successful server validation.
+- Set payment status to PENDING until the money is collected.
+- Display the exact amount due.
+- Allow authorized staff to record collection with an audit trail.
+
+Do not claim that the application can accept real UPI payments until a real payment integration has been configured and tested.
+
+==================================================
+8. ORDER MANAGEMENT AND CUSTOMER TRACKING
+==================================================
+
+Create a persistent order tracking page with:
+- Order number.
+- Current status.
+- Timestamped progress timeline.
+- Items and quantities.
+- Bill and payment status.
+- Delivery address or pickup information.
+- Estimated delivery/pickup window, only when configured.
+- Contact/customer-care option.
+- Cancellation action when eligible.
+
+Use these statuses:
+1. Order Placed.
+2. Accepted.
+3. Cooking / Preparing.
+4. Ready for Dispatch or Ready for Pickup.
+5. Out for Delivery, for delivery orders only.
+6. Delivered or Picked Up, as appropriate.
+7. Rejected.
+8. Cancelled.
+
+Implement a valid transition model rather than allowing arbitrary status changes. The backend must enforce transitions and permissions.
+
+Track status changes with:
+- Old and new status.
+- Timestamp.
+- Authorized actor.
+- Optional reason or internal note.
+
+Update the customer tracking page when an authorized admin changes an order status. Prefer Server-Sent Events or WebSockets with authenticated access, reconnect handling and polling fallback.
+
+Do not simulate live GPS tracking or claim a delivery agent is moving on a map without a real location integration.
+
+Cancellation:
+- Configure cancellation eligibility by order state and business policy.
+- Permit cancellation only while eligible.
+- Once preparation starts or the cancellation window closes, offer customer care.
+- Record cancellation reason and timestamp.
+- Never silently discard an order.
+- Handle payment refunds through the real payment provider if such a provider is later enabled.
+
+Order status history must remain available even after cancellation or delivery.
+
+==================================================
+9. CUSTOMER DASHBOARD
+==================================================
+
+Create a dedicated customer area with these sections:
+- Home / Products.
+- Profile.
+- Addresses.
+- Active Order.
+- Order History.
+- Customer Care.
+- Feedback.
+
+Active Order should show a prominent tracking card that opens the detailed order page.
+
+Order History should support:
+- Order date.
+- Order number.
+- Amount.
+- Status.
+- View bill.
+- View order details.
+- Reorder.
+- Submit feedback when eligible.
+
+Reorder should revalidate current prices and availability before adding items to the cart.
+
+Customer Care should allow users to create a ticket, select a category, describe the problem and associate it with an order. Display the ticket's current status and replies.
+
+Feedback should support a rating and written comments, with one feedback entry per eligible completed order unless the owner configures otherwise. Provide moderation controls for admins.
+
+==================================================
+10. ADMIN DASHBOARD
+==================================================
+
+Implement a fully protected /admin area.
+
+Provision the initial administrator securely using a documented environment-driven bootstrap process or a secure one-time setup command. Do not create a publicly accessible admin signup route. Do not seed a known production password.
+
+Admin overview:
+- Today's orders.
+- Pending orders.
+- Completed orders.
+- Cancelled/rejected orders.
+- Gross sales.
+- Average order value.
+- Popular products.
+- Order counts by status.
+- Date-range filters.
+
+Clearly distinguish gross order totals, discounts, taxes, delivery charges and net sales where applicable. Exclude unpaid or cancelled orders from metrics where the metric definition requires it. Document metric definitions.
+
+Order management:
+- Search by order number or authorized customer details.
+- Filter by date, status, fulfilment mode and payment status.
+- Inspect the complete order and itemized invoice.
+- View contact details and fulfilment address.
+- Update status through permitted transitions.
+- Add internal notes.
+- Record rejection or cancellation reasons.
+- View the full status history.
+- View payment state and COD collection status.
+- Identify new orders promptly.
+
+Product management:
+- Create, edit, archive and search products.
+- Manage categories.
+- Manage descriptions and product images.
+- Manage base prices, variants and add-ons.
+- Set product availability.
+- Feature products.
+- Manage optional discounts and coupons.
+- Preview product cards.
+- Prevent deletion from corrupting historical order records.
+
+Branch and fulfilment settings:
+- Configure branch address and phone.
+- Set business hours and temporary closures.
+- Set delivery and takeaway availability.
+- Configure delivery fees and minimum order.
+- Configure service areas and estimated preparation times.
+- Pause or resume order acceptance.
+
+Customer management:
+- View registered customers and signup dates.
+- View their permitted order history.
+- Update account status according to policy.
+- Never expose password hashes or sensitive authentication data in the UI.
+
+Customer care:
+- Support ticket inbox.
+- Category and priority.
+- Assigned staff member.
+- Open, in-progress and resolved states.
+- Customer replies and staff replies.
+- Internal notes.
+- Linked order details.
+- Resolution history.
+
+Feedback management:
+- View ratings and comments.
+- Filter by date and rating.
+- Moderate inappropriate submissions.
+- Avoid silently changing customer feedback.
+
+Reports and audit:
+- Date-filtered order and sales reports.
+- Product performance.
+- Export authorized reports as CSV when appropriate.
+- Audit log for important admin actions.
+- Actor, timestamp, action, affected record and relevant change summary.
+
+Use role-based permissions. An owner can manage all settings; an order operator can manage orders; other roles can be introduced if needed. Every privileged API must verify authorization on the server.
+
+==================================================
+11. DATABASE DESIGN
+==================================================
+
+Design a normalized PostgreSQL schema with appropriate constraints, foreign keys, indexes and migration history.
+
+Include tables or equivalent models for:
+- Users.
+- Roles and role assignments.
+- Branches.
+- Addresses.
+- Categories.
+- Products.
+- Branch-specific product availability and pricing if needed.
+- Product variants and add-ons.
+- Orders.
+- Order items.
+- Order status history.
+- Payment records.
+- Support tickets.
+- Support messages.
+- Feedback.
+- Coupons and discount rules, if implemented.
+- Business and delivery settings.
+- Admin audit logs.
+
+Requirements:
+- Store phone numbers as strings.
+- Store password hashes only.
+- Store money using appropriate decimal/numeric types.
+- Store timestamps consistently and display them in the relevant local timezone.
+- Preserve product names, selected options, quantities and unit prices in order snapshots.
+- Preserve invoice totals and fee breakdowns for historical orders.
+- Do not recalculate old invoices from today's product prices.
+- Use database transactions for order creation and other multi-record operations.
+- Add unique constraints where appropriate.
+- Avoid hard deletion of products referenced by historical orders.
+- Add pagination and indexes for frequently queried order and admin fields.
+- Keep migrations reproducible from a clean database.
+
+Provide development seed data with unmistakable demo labels. Keep real business data configurable.
+
+==================================================
+12. BACKEND ARCHITECTURE AND SECURITY
+==================================================
+
+Use a maintainable structure separating:
+- Routes.
+- Controllers.
+- Services.
+- Database access.
+- Validation schemas.
+- Authentication middleware.
+- Role authorization middleware.
+- Centralized error handling.
+- Configuration.
+- Logging.
+- Tests.
+
+Use Zod or an equivalent schema validation library.
+
+Implement:
+- Helmet and secure HTTP headers.
+- Restrictive production CORS configuration.
+- Request size limits.
+- Rate limiting.
+- SQL injection prevention through Prisma and safe query practices.
+- Output and input validation.
+- Consistent HTTP status codes.
+- Safe error messages.
+- Structured logs without secrets.
+- Ownership checks for customer resources.
+- Server-side order and payment validation.
+- CSRF protection when required by the chosen session architecture.
+- Secure session storage and expiry.
+- Webhook signature verification when payment integration is configured.
+- Health and readiness endpoints without leaking secrets.
+
+Never expose database URLs, session secrets, API keys or payment credentials in client bundles, source control, logs or error responses.
+
+Use .env.example containing placeholder values only.
+
+==================================================
+13. FRONTEND ENGINEERING
+==================================================
+
+Build reusable React components and maintain a clear separation between:
+- Public storefront pages.
+- Authentication pages.
+- Customer dashboard.
+- Product and cart components.
+- Checkout and payment states.
+- Order tracking.
+- Customer support.
+- Admin pages.
+- Shared layout and navigation.
+- API client and data hooks.
+
+Implement:
+- Typed API contracts.
+- Centralized request/error handling.
+- Form validation.
+- Loading and disabled states.
+- Empty states.
+- Retry handling where safe.
+- Confirmation dialogs for destructive actions.
+- Toasts or accessible inline notifications.
+- Responsive tables or card layouts on mobile.
+- Session-aware navigation.
+- Protected route UX, backed by server authorization.
+- Accessible modal focus management.
+- Useful 404 and general error pages.
+
+Do not rely on localStorage as the source of truth for accounts, payments, order status, prices or admin metrics.
+
+==================================================
+14. TESTING AND ACCEPTANCE CRITERIA
+==================================================
+
+Implement tests and run the checks that are available in the environment. Report honestly if a database, external service or credential is unavailable.
+
+Authentication tests:
+- Registration validation.
+- Password hashing.
+- Successful and unsuccessful login.
+- Session expiration.
+- Rate limiting where practical.
+- Customer access restrictions.
+- Admin authorization.
+
+Product and cart tests:
+- Product availability.
+- Price validation.
+- Quantity limits.
+- Variant/add-on calculations.
+- Cart changes after a product becomes unavailable.
+- Invalid discounts.
+
+Checkout and order tests:
+- Server-calculated totals.
+- Delivery versus takeaway requirements.
+- Delivery fee calculation.
+- COD payment status.
+- Unconfigured UPI behavior.
+- Duplicate submissions.
+- Transaction rollback on failure.
+- Order snapshot persistence.
+- Cancellation eligibility.
+- Invalid order status transitions.
+- Ownership checks.
+
+Admin tests:
+- Unauthorized access rejection.
+- Product CRUD.
+- Branch settings.
+- Order status changes.
+- Customer-care workflows.
+- Audit logging.
+- Report calculations.
+
+End-to-end acceptance flow:
+A. A customer registers or checks out as a guest.
+B. The customer browses the menu and adds customized items.
+C. The customer opens the cart and changes quantities.
+D. The customer checks out with delivery or takeaway.
+E. The customer sees a complete itemized bill.
+F. The customer selects COD and submits an order.
+G. The order persists in PostgreSQL.
+H. The authorized admin sees the new order and full details.
+I. The admin accepts the order and changes its status.
+J. The customer's tracking page reflects the updated status.
+K. The customer views the order in history and sees the correct invoice.
+L. The customer can cancel only when the configured policy permits it.
+M. Unauthorized users cannot access another customer's order or admin functions.
+
+Verify:
+- Production build.
+- TypeScript type checking.
+- Linting.
+- Database migrations.
+- Seed scripts.
+- Unit tests.
+- Integration tests.
+- Responsive layout.
+- No critical console errors.
+- No nonfunctional primary buttons.
+
+Do not claim a test passed unless it was actually run and passed.
+
+==================================================
+15. DEPLOYMENT AND DOCUMENTATION
+==================================================
+
+Provide a README containing:
+- Project architecture.
+- Prerequisites and supported runtime versions.
+- Local installation.
+- Environment variable setup.
+- PostgreSQL setup.
+- Prisma migrations and development seed commands.
+- Admin bootstrap instructions.
+- Frontend and backend development commands.
+- Build and production start commands.
+- Test, type-check and lint commands.
+- API documentation location.
+- Payment integration setup requirements.
+- Production security checklist.
+- Deployment instructions for the chosen hosting approach.
+- Database backup and restore guidance.
+- Known limitations and remaining setup tasks.
+
+Provide .env.example with placeholder values only. Include a health check, production logging guidance, migration strategy and database connection guidance. Never commit .env files, production secrets or real customer data.
+
+Clearly distinguish:
+1. Working and tested functionality.
+2. Functionality implemented but not tested against a real external service.
+3. Integrations that still require credentials or business configuration.
+
+==================================================
+16. IMPLEMENTATION PROCESS
+==================================================
+
+Work in the following order:
+
+Phase 1: Inspect the workspace, confirm the available tooling and create an implementation plan.
+Phase 2: Establish the database schema, migrations and seed data.
+Phase 3: Implement authentication and core API services.
+Phase 4: Implement the storefront, product catalog, cart and customer account pages.
+Phase 5: Implement checkout, COD and safe UPI integration boundaries.
+Phase 6: Implement order tracking and real backend status updates.
+Phase 7: Implement admin order management, product management, support and reporting.
+Phase 8: Implement automated tests and run all available checks.
+Phase 9: Fix failures, review security, test responsiveness and document deployment.
+
+After each phase, inspect the actual implementation and fix defects before proceeding.
+
+Do not stop after producing a plan. Continue implementing the application. Do not replace the existing project with an unrelated scaffold if a usable project already exists.
+
+If the execution environment cannot run PostgreSQL or configure external services, implement the correct integration code, clearly identify the blocker, and document how to run and test it in a suitable environment. Never claim persistence or live payment processing has been verified when it has not.
+
+FINAL DELIVERABLE:
+A coherent full-stack Waffle Pops and Company ordering application with a polished customer storefront, delivery/takeaway checkout, COD support, a safely isolated UPI integration, persistent PostgreSQL data, secure authentication, customer order tracking, a functional protected admin dashboard, tests and deployment instructions.

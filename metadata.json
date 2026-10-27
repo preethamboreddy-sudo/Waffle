@@ -1,0 +1,6 @@
+{
+  "name": "Waffle Pops and Company",
+  "description": "Full-stack online ordering platform for Belgian waffles, stuffed waffles, and artisan chocolate waffle pops.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

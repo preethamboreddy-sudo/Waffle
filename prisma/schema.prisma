@@ -1,0 +1,364 @@
+// Prisma Schema for Waffle Pops and Company
+// Database: PostgreSQL with normalized entities, constraints, and audit trails
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Role {
+  CUSTOMER
+  ADMIN
+  OPERATOR
+}
+
+enum FulfilmentMode {
+  DELIVERY
+  TAKEAWAY
+}
+
+enum PaymentMethod {
+  COD
+  UPI
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
+}
+
+enum OrderStatus {
+  ORDER_PLACED
+  ACCEPTED
+  PREPARING
+  READY_FOR_DISPATCH
+  OUT_FOR_DELIVERY
+  READY_FOR_PICKUP
+  DELIVERED
+  PICKED_UP
+  REJECTED
+  CANCELLED
+}
+
+enum TicketStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
+}
+
+enum TicketPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+model User {
+  id           String          @id @default(uuid())
+  name         String
+  phone        String          @unique
+  email        String?         @unique
+  passwordHash String
+  role         Role            @default(CUSTOMER)
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+
+  addresses    Address[]
+  orders       Order[]
+  tickets      SupportTicket[]
+  messages     SupportMessage[]
+  feedback     Feedback[]
+  auditLogs    AuditLog[]
+
+  @@index([phone])
+}
+
+model Branch {
+  id                     String    @id @default(uuid())
+  name                   String
+  slug                   String    @unique
+  address                String
+  landmark               String?
+  city                   String    @default("Mandadam")
+  state                  String    @default("Andhra Pradesh")
+  postalCode             String?
+  phone                  String?
+  isOpen                 Boolean   @default(true)
+  orderAcceptancePaused  Boolean   @default(false)
+  deliveryAvailable      Boolean   @default(true)
+  takeawayAvailable      Boolean   @default(true)
+  minOrderAmount         Decimal   @default(99.00) @db.Decimal(10, 2)
+  deliveryFee            Decimal   @default(30.00) @db.Decimal(10, 2)
+  estimatedPrepTimeMins  Int       @default(20)
+  isProvisional          Boolean   @default(true)
+  notes                  String?
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
+
+  orders                 Order[]
+}
+
+model Address {
+  id           String    @id @default(uuid())
+  userId       String
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  label        String    @default("Home") // Home, Work, Other
+  street       String
+  landmark     String?
+  city         String    @default("Mandadam")
+  postalCode   String?
+  instructions String?
+  isDefault    Boolean   @default(false)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  orders       Order[]
+
+  @@index([userId])
+}
+
+model Category {
+  id          String    @id @default(uuid())
+  name        String
+  slug        String    @unique
+  description String?
+  sortOrder   Int       @default(0)
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  products    Product[]
+}
+
+model Product {
+  id          String            @id @default(uuid())
+  categoryId  String
+  category    Category          @relation(fields: [categoryId], references: [id])
+  name        String
+  slug        String            @unique
+  description String
+  imageUrl    String
+  basePrice   Decimal           @db.Decimal(10, 2)
+  isAvailable Boolean           @default(true)
+  isFeatured  Boolean           @default(false)
+  isDemoPrice Boolean           @default(true)
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  variants    ProductVariant[]
+  addons      ProductAddon[]
+  orderItems  OrderItem[]
+
+  @@index([categoryId])
+  @@index([isAvailable])
+}
+
+model ProductVariant {
+  id         String   @id @default(uuid())
+  productId  String
+  product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  name       String   // e.g., "Regular Single", "Double Stack"
+  priceDelta Decimal  @default(0.00) @db.Decimal(10, 2)
+
+  @@index([productId])
+}
+
+model ProductAddon {
+  id          String   @id @default(uuid())
+  productId   String
+  product     Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  name        String   // e.g., "Extra Melted Belgian Chocolate", "Roasted Hazelnut Crunch"
+  price       Decimal  @db.Decimal(10, 2)
+  maxQuantity Int      @default(3)
+
+  @@index([productId])
+}
+
+model Order {
+  id                     String             @id @default(uuid())
+  orderNumber            String             @unique
+  userId                 String?
+  user                   User?              @relation(fields: [userId], references: [id])
+  customerName           String
+  customerPhone          String
+  branchId               String
+  branch                 Branch             @relation(fields: [branchId], references: [id])
+  fulfilmentMode         FulfilmentMode
+  deliveryAddressId      String?
+  deliveryAddress        Address?           @relation(fields: [deliveryAddressId], references: [id])
+  deliveryAddressSnapshot Json?
+  takeawayPickupTime     DateTime?
+  subtotal               Decimal            @db.Decimal(10, 2)
+  deliveryFee            Decimal            @default(0.00) @db.Decimal(10, 2)
+  tax                    Decimal            @default(0.00) @db.Decimal(10, 2)
+  discount               Decimal            @default(0.00) @db.Decimal(10, 2)
+  totalAmount            Decimal            @db.Decimal(10, 2)
+  paymentMethod          PaymentMethod
+  paymentStatus          PaymentStatus      @default(PENDING)
+  orderStatus            OrderStatus        @default(ORDER_PLACED)
+  cancellationReason     String?
+  rejectionReason        String?
+  customerNotes          String?
+  internalNotes          String?
+  idempotencyKey         String?            @unique
+  createdAt              DateTime           @default(now())
+  updatedAt              DateTime           @updatedAt
+
+  items                  OrderItem[]
+  statusHistory          OrderStatusHistory[]
+  paymentRecords         PaymentRecord[]
+  tickets                SupportTicket[]
+  feedback               Feedback?
+
+  @@index([orderNumber])
+  @@index([userId])
+  @@index([branchId])
+  @@index([orderStatus])
+  @@index([createdAt])
+}
+
+model OrderItem {
+  id              String   @id @default(uuid())
+  orderId         String
+  order           Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId       String
+  product         Product  @relation(fields: [productId], references: [id])
+  productName     String
+  unitPrice       Decimal  @db.Decimal(10, 2)
+  quantity        Int
+  variantSnapshot Json?    // { name: "Double Stack", priceDelta: 40.00 }
+  addonsSnapshot  Json?    // [{ name: "Extra Chocolate", price: 25.00, quantity: 1 }]
+  subtotal        Decimal  @db.Decimal(10, 2)
+
+  @@index([orderId])
+  @@index([productId])
+}
+
+model OrderStatusHistory {
+  id         String      @id @default(uuid())
+  orderId    String
+  order      Order       @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  fromStatus OrderStatus
+  toStatus   OrderStatus
+  actorId    String?
+  actorRole  String?
+  reason     String?
+  timestamp  DateTime    @default(now())
+
+  @@index([orderId])
+}
+
+model PaymentRecord {
+  id            String        @id @default(uuid())
+  orderId       String
+  order         Order         @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  method        PaymentMethod
+  provider      String        // e.g., "COD_CASH", "UPI_INTENT_SANDBOX"
+  transactionId String?
+  amount        Decimal       @db.Decimal(10, 2)
+  status        PaymentStatus @default(PENDING)
+  collectedBy   String?
+  collectedAt   DateTime?
+  metadata      Json?
+  createdAt     DateTime      @default(now())
+
+  @@index([orderId])
+}
+
+model SupportTicket {
+  id           String          @id @default(uuid())
+  ticketNumber String          @unique
+  userId       String?
+  user         User?           @relation(fields: [userId], references: [id])
+  orderId      String?
+  order        Order?          @relation(fields: [orderId], references: [id])
+  customerName String
+  customerPhone String
+  category     String          // "Order Delay", "Incorrect Item", "Payment Inquiry", "Quality Issue", "Other"
+  priority     TicketPriority  @default(MEDIUM)
+  status       TicketStatus    @default(OPEN)
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+
+  messages     SupportMessage[]
+
+  @@index([userId])
+  @@index([orderId])
+  @@index([status])
+}
+
+model SupportMessage {
+  id         String        @id @default(uuid())
+  ticketId   String
+  ticket     SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  senderId   String?
+  senderRole String        // "CUSTOMER", "STAFF", "SYSTEM"
+  senderName String
+  message    String
+  isInternal Boolean       @default(false)
+  createdAt  DateTime      @default(now())
+
+  @@index([ticketId])
+}
+
+model Feedback {
+  id           String   @id @default(uuid())
+  orderId      String   @unique
+  order        Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  userId       String?
+  user         User?    @relation(fields: [userId], references: [id])
+  customerName String
+  rating       Int      // 1 to 5 stars
+  comment      String
+  isModerated  Boolean  @default(false)
+  isApproved   Boolean  @default(true)
+  createdAt    DateTime @default(now())
+
+  @@index([rating])
+}
+
+model AuditLog {
+  id            String   @id @default(uuid())
+  actorId       String?
+  user          User?    @relation(fields: [actorId], references: [id])
+  actorName     String
+  actorRole     String
+  action        String   // e.g., "STATUS_UPDATE", "COD_COLLECTED", "PRODUCT_EDIT", "STORE_PAUSED"
+  entityType    String   // "ORDER", "PRODUCT", "BRANCH", "TICKET"
+  entityId      String
+  changeSummary String
+  ipAddress     String?
+  createdAt     DateTime @default(now())
+
+  @@index([entityType, entityId])
+  @@index([createdAt])
+}
+
+// Runtime snapshot for the existing transactional store. The app uses this single JSONB row
+// when DATABASE_URL is configured; the relational models above remain available for migration.
+model StoreState {
+  id        Int      @id @default(1)
+  data      Json
+  updatedAt DateTime @default(now()) @updatedAt
+}
+
+// Customer accounts managed by the lightweight PostgreSQL auth repository.
+model WaffleAuthUser {
+  id           String   @id
+  name         String
+  phone        String   @unique @db.VarChar(15)
+  email        String?
+  passwordHash String   @map("password_hash")
+  role         String   @default("CUSTOMER")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@map("waffle_auth_users")
+}
